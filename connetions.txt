@@ -4,6 +4,9 @@ EN 2 				GPIO 18
 IN3 				GPIO 5
 IN4 				GPIO 17
 
-
+----------------------------------------
++5v 				VIN
+-5v				GND
+------------------------------------------
 https://www.raspberryme.com/moteur-pas-a-pas-esp32-pilote-28byj-48-et-uln2003/
 
