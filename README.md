@@ -10,7 +10,10 @@ Composants (Prix sur https://fr.aliexpress.com/)
 - Pile CR2032 = 1.08€
 - Moteur pas à pas 28BYJ-48 = 2,56€
 - ESP32 30 pin USB C = 4,12€
-
+- Micro SD 16Go = 2,14€
+- Haut-parleur 2831/3128 = 1,49€
+- Dfplayer mini mp3 = 1,59€
+- Led KY-009 = 1,01€
 
 Outils
 ------
