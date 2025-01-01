@@ -1,5 +1,7 @@
 
-Composants (Prix sur https://fr.aliexpress.com/)
+![Modèle 3D](/images/body_3d.png)
+
+Composants 
 ----------
 
 - 200g de PLA ≈ 3 €
@@ -14,6 +16,8 @@ Composants (Prix sur https://fr.aliexpress.com/)
 - Haut-parleur 2831/3128 = 1,49€
 - Dfplayer mini mp3 = 1,59€
 - Led KY-009 = 1,01€
+
+(Prix sur https://fr.aliexpress.com/)
 
 Outils
 ------
