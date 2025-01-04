@@ -10,6 +10,9 @@
 #include <ESP32Servo.h>
 #include "soc/rtc_wdt.h"
 //--------------------------------------------------------------------------------------------------
+//Lib servomotor
+#include <ESP32Servo.h>
+//--------------------------------------------------------------------------------------------------
 
 // Variables Wifi
 AsyncWebServer server(80);
@@ -30,7 +33,32 @@ static const int SERVO_PIN = 16;
 Stepper STEEPER(STEPS_PER_REVOLUTION, IN1, IN3, IN2, IN4);
 
 int askedSteps = 0;
+//--------------------------------------------------------------------------------------------------
+//servomotor 
+/*
+ESP32       Couleur du fil SG90
+GND         Marron
+5V ou 3V3   Rouge
+GPIO22      Orange
+*/
 
+const int PIN_SG90 = 22; 
+Servo SERVOMOTOR;
+int askedPosition = -1;
+
+//--------------------------------------------------------------------------------------------------
+
+void initServomotor() {
+  SERVOMOTOR.setPeriodHertz(50); // Fréquence PWM pour le SG90
+  SERVOMOTOR.attach(PIN_SG90, 500, 2400); // Largeur minimale et maximale de l'impulsion (en µs) pour aller de 0° à 180°
+}
+
+void moveServoTo(int position){
+  SERVOMOTOR.write(position);
+  Serial.print("Nombre de pas: ");
+  Serial.println(position);
+}
+    
 //--------------------------------------------------------------------------------------------------
 
 
@@ -63,6 +91,9 @@ void setup()
   // Stepper init 
   initStepper();
 
+  //servomotor init 
+  initServomotor();
+
   // server Wifi init 
   Serial.begin(9600);
   WiFi.mode(WIFI_STA);
@@ -82,6 +113,7 @@ void setup()
       data["message"] = request->getParam("message")->value();
       Serial.println(request->getParam("message")->value().toInt());
       askedSteps = request->getParam("message")->value().toInt();
+      askedPosition = request->getParam("message")->value().toInt();
     }
     else
     {
@@ -113,8 +145,13 @@ void setup()
 void loop()
 {
   if(askedSteps != 0){
-    moveStepperTo(askedSteps);
+    //moveStepperTo(askedSteps);
     askedSteps = 0;
+  }
+
+  if(askedPosition != -1){
+    moveServoTo(askedPosition);
+    askedPosition = -1;
   }
 }
 
