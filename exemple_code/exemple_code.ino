@@ -29,7 +29,8 @@ const int IN2 = 18;
 const int IN3 = 5;
 const int IN4 = 17;
 
-static const int SERVO_PIN = 16;
+const int STEEPER_SPEED = 5; // Speed at 5 rpm
+
 Stepper STEEPER(STEPS_PER_REVOLUTION, IN1, IN3, IN2, IN4);
 
 int askedSteps = 0;
@@ -66,9 +67,7 @@ void moveServoTo(int position){
 void initStepper() 
 {
   // set the speed at 5 rpm
-  STEEPER.setSpeed(5);
-  // initialize the serial port
-  Serial.begin(9600);
+  STEEPER.setSpeed(STEEPER_SPEED);
 }
 
 void moveStepperTo(int steps)
@@ -88,24 +87,32 @@ void notFound(AsyncWebServerRequest *request)
 //--------------------------------------------------------------------------------------------------
 void setup()
 {
+  // initialize the serial port
+  Serial.begin(9600);
+
   // Stepper init 
   initStepper();
 
   //servomotor init 
   initServomotor();
 
-  // server Wifi init 
-  Serial.begin(9600);
+  // Init server Wifi  
   WiFi.mode(WIFI_STA);
   WiFi.begin(SSID, PASSWORD);
   while (WiFi.waitForConnectResult() != WL_CONNECTED)
   {
     Serial.printf("WiFi Failed!\n");
   }
+
+  // Affichage de l'addresse IP 
   Serial.print("IP Address: ");
-  Serial.println(WiFi.localIP());server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+  Serial.println(WiFi.localIP());
+  
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) 
+  {
     request->send(200, "application/json", "{\"message\":\"Welcome\"}");
   });
+
   server.on("/get-message", HTTP_GET, [](AsyncWebServerRequest *request) {
     StaticJsonDocument<100> data;
     if (request->hasParam("message"))
@@ -113,7 +120,6 @@ void setup()
       data["message"] = request->getParam("message")->value();
       Serial.println(request->getParam("message")->value().toInt());
       askedSteps = request->getParam("message")->value().toInt();
-      askedPosition = request->getParam("message")->value().toInt();
     }
     else
     {
@@ -123,6 +129,33 @@ void setup()
     serializeJson(data, response);
     request->send(200, "application/json", response);
   });
+
+
+  server.on("/lock", HTTP_GET, [](AsyncWebServerRequest *request) {
+    StaticJsonDocument<100> data;
+    if (request->hasParam("value"))
+    {
+      String value = request->getParam("value")->value();
+      if(value == "true")
+      {
+        askedPosition = 180;
+        data["message"] = "lock is true";
+      }
+      else if(value == "false")
+      {
+        askedPosition =  0;
+        data["message"] = "lock is false";
+      }
+    }
+    else
+    {
+      data["message"] = "No value parameter";
+    }
+    String response;
+    serializeJson(data, response);
+    request->send(200, "application/json", response);
+  });
+
   AsyncCallbackJsonWebHandler *handler = new AsyncCallbackJsonWebHandler("/post-message", [](AsyncWebServerRequest *request, JsonVariant &json) {
     StaticJsonDocument<200> data;
     if (json.is<JsonArray>())
@@ -138,14 +171,16 @@ void setup()
     request->send(200, "application/json", response);
     Serial.println(response);
   });
-  server.addHandler(handler);server.onNotFound(notFound);
+
+  server.addHandler(handler);
+  server.onNotFound(notFound);
   server.begin();
 }
 
 void loop()
 {
   if(askedSteps != 0){
-    //moveStepperTo(askedSteps);
+    moveStepperTo(askedSteps);
     askedSteps = 0;
   }
 
@@ -153,62 +188,12 @@ void loop()
     moveServoTo(askedPosition);
     askedPosition = -1;
   }
+
+  delay(10);
 }
 
 
-
-
-
-
-
-
-
 /*
-
-    #include <Stepper.h> //AccelStepper
-    #include <ESP32Servo.h>
-    const int stepsPerRevolution = 2048;  // change this to fit the number of steps per revolution
-    // ULN2003 Motor Driver Pins
-    #define IN1 19
-    #define IN2 18
-    #define IN3 5
-    #define IN4 17
-
-    static const int servoPin = 16;
-    Servo servo1;
-
-    // initialize the stepper library
-    Stepper myStepper(stepsPerRevolution, IN1, IN3, IN2, IN4);
-    void setup() {
-      // set the speed at 5 rpm
-      myStepper.setSpeed(5);
-      // initialize the serial port
-      Serial.begin(115200);
-      servo1.attach(servoPin);
-    }
-
-    void loop() {
-      // step one revolution in one direction:
-      Serial.println("clockwise");
-      myStepper.step(stepsPerRevolution);
-      delay(1000);
-      // step one revolution in the other direction:
-      Serial.println("counterclockwise");
-      myStepper.step(-stepsPerRevolution);
-      delay(1000);
-
-      // servo motor 
-      for(int posDegrees = 0; posDegrees <= 180; posDegrees++) {
-        servo1.write(posDegrees);
-        Serial.println(posDegrees);
-        delay(20);
-      }
-
-      for(int posDegrees = 180; posDegrees >= 0; posDegrees--) {
-        servo1.write(posDegrees);
-        Serial.println(posDegrees);
-        delay(20);
-      }
-    }
-
-    */
+  Ressources:
+  https://raphaelpralat.medium.com/example-of-json-rest-api-for-esp32-4a5f64774a05
+*/
