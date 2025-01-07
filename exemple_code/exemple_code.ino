@@ -13,6 +13,10 @@
 //Lib servomotor
 #include <ESP32Servo.h>
 //--------------------------------------------------------------------------------------------------
+//Lib time from NTP server
+#include "time.h"
+//--------------------------------------------------------------------------------------------------
+
 
 // Variables Wifi
 AsyncWebServer server(80);
@@ -46,6 +50,19 @@ GPIO22      Orange
 const int PIN_SG90 = 22; 
 Servo SERVOMOTOR;
 int askedPosition = -1;
+//--------------------------------------------------------------------------------------------------
+const char* NTP_SERVER = "pool.ntp.org";  //server ntp you want to use. 
+const long  GMT_OFFSET_SEC = 0;           //variable defines the offset in seconds between your time zone and GMT, for Portugalthe time offset is 0 
+const int   DAY_LIGHT_OFFSET_SEC = 3600;  // variable defines the offset in seconds for daylight saving time. It is generally one hour, that corresponds to 3600 seconds
+
+//--------------------------------------------------------------------------------------------------
+
+void initNtpTime()
+{
+  // Init and get the time
+  configTime(GMT_OFFSET_SEC, DAY_LIGHT_OFFSET_SEC, NTP_SERVER);
+}
+
 
 //--------------------------------------------------------------------------------------------------
 
@@ -83,7 +100,17 @@ void notFound(AsyncWebServerRequest *request)
 {
   request->send(404, "application/json", "{\"message\":\"Not found\"}");
 }
+//--------------------------------------------------------------------------------------------------
 
+struct tm getNtpTime()
+{
+  struct tm timeinfo;
+  if(!getLocalTime(&timeinfo)){
+    Serial.println("Failed to obtain time");
+  }
+ 
+  return timeinfo;
+}
 //--------------------------------------------------------------------------------------------------
 void setup()
 {
@@ -96,6 +123,7 @@ void setup()
   //servomotor init 
   initServomotor();
 
+
   // Init server Wifi  
   WiFi.mode(WIFI_STA);
   WiFi.begin(SSID, PASSWORD);
@@ -107,6 +135,9 @@ void setup()
   // Affichage de l'addresse IP 
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
+
+  //Init NTP Time
+  initNtpTime();
   
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) 
   {
@@ -189,7 +220,12 @@ void loop()
     askedPosition = -1;
   }
 
-  delay(10);
+  struct tm timeinfo = getNtpTime();
+
+  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+  
+
+  delay(1000);
 }
 
 
