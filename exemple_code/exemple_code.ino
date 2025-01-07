@@ -232,4 +232,9 @@ void loop()
 /*
   Ressources:
   https://raphaelpralat.medium.com/example-of-json-rest-api-for-esp32-4a5f64774a05
+  https://randomnerdtutorials.com/esp32-bluetooth-classic-arduino-ide/
+  https://randomnerdtutorials.com/install-esp32-filesystem-uploader-arduino-ide/
+  https://randomnerdtutorials.com/esp32-flash-memory/
+  https://randomnerdtutorials.com/esp32-save-data-permanently-preferences/
+  
 */
