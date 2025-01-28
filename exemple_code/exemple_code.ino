@@ -16,6 +16,13 @@
 //Lib time from NTP server
 #include "time.h"
 //--------------------------------------------------------------------------------------------------
+//Lib bluetooth communication
+#include "BluetoothSerial.h"
+//--------------------------------------------------------------------------------------------------
+// Variable bluetooth
+BluetoothSerial SerialBT;
+
+//--------------------------------------------------------------------------------------------------
 
 
 // Variables Wifi
@@ -63,6 +70,12 @@ void initNtpTime()
   configTime(GMT_OFFSET_SEC, DAY_LIGHT_OFFSET_SEC, NTP_SERVER);
 }
 
+
+//--------------------------------------------------------------------------------------------------
+// init Bluetooth
+void iniBluetooth() {
+  SerialBT.begin("ESP32test"); //Bluetooth device name
+}
 
 //--------------------------------------------------------------------------------------------------
 
@@ -123,6 +136,8 @@ void setup()
   //servomotor init 
   initServomotor();
 
+  //Bluetooth init 
+  iniBluetooth();
 
   // Init server Wifi  
   WiFi.mode(WIFI_STA);
@@ -220,10 +235,18 @@ void loop()
     askedPosition = -1;
   }
 
+  // ntp server part 
   struct tm timeinfo = getNtpTime();
-
-  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+  // Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
   
+
+  // Bluetooth part 
+  if (Serial.available()) {
+    SerialBT.write(Serial.read());
+  }
+  if (SerialBT.available()) {
+    Serial.write(SerialBT.read());
+  }
 
   delay(1000);
 }
@@ -236,5 +259,6 @@ void loop()
   https://randomnerdtutorials.com/install-esp32-filesystem-uploader-arduino-ide/
   https://randomnerdtutorials.com/esp32-flash-memory/
   https://randomnerdtutorials.com/esp32-save-data-permanently-preferences/
+  https://www.youtube.com/watch?v=VJaOULvMxeM
   
 */
