@@ -25,6 +25,9 @@ BluetoothSerial SerialBT;
 //--------------------------------------------------------------------------------------------------
 
 
+//Instruction compilation sur arduino IDE
+Allez dans Outils → Partition Scheme et sélectionner "Minimal SPIFFS (1.9MB APP with OTA)" au lieu de "Default 4MB with SPIFFS".  
+
 // Variables Wifi
 AsyncWebServer server(80);
 const char *SSID = "Freebox-44E6E2";
