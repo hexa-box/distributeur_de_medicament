@@ -26,7 +26,7 @@ BluetoothSerial SerialBT;
 
 
 //Instruction compilation sur arduino IDE
-Allez dans Outils → Partition Scheme et sélectionner "Minimal SPIFFS (1.9MB APP with OTA)" au lieu de "Default 4MB with SPIFFS".  
+//Allez dans Outils → Partition Scheme et sélectionner "Minimal SPIFFS (1.9MB APP with OTA)" au lieu de "Default 4MB with SPIFFS".  
 
 // Variables Wifi
 AsyncWebServer server(80);
@@ -41,7 +41,7 @@ const int STEPS_PER_REVOLUTION = 2048;  // change this to fit the number of step
 const int IN1 = 19;
 const int IN2 = 18;
 const int IN3 = 5;
-const int IN4 = 17;
+const int IN4 = 4;
 
 const int STEEPER_SPEED = 5; // Speed at 5 rpm
 
@@ -240,7 +240,7 @@ void loop()
 
   // ntp server part 
   struct tm timeinfo = getNtpTime();
-  // Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
   
 
   // Bluetooth part 
