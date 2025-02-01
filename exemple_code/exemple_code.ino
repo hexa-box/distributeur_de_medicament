@@ -21,7 +21,14 @@
 //--------------------------------------------------------------------------------------------------
 // Variable bluetooth
 BluetoothSerial SerialBT;
-
+//--------------------------------------------------------------------------------------------------
+//Lib dfplayer mini 
+#include "Arduino.h"                // Include the core Arduino library
+#include "DFRobotDFPlayerMini.h"    // Include the DFRobot DFPlayer Mini library
+//--------------------------------------------------------------------------------------------------
+// Variable dfplayer mini 
+#define FPSerial Serial1          // For ESP32, use hardware serial port 1
+DFRobotDFPlayerMini myDFPlayer;   // Create an instance of the DFRobotDFPlayerMini class
 //--------------------------------------------------------------------------------------------------
 
 
@@ -75,7 +82,7 @@ void initNtpTime()
 
 
 //--------------------------------------------------------------------------------------------------
-// init Bluetooth
+// Init Bluetooth
 void iniBluetooth() {
   SerialBT.begin("ESP32test"); //Bluetooth device name
 }
@@ -111,6 +118,21 @@ void moveStepperTo(int steps)
 }
 
 //--------------------------------------------------------------------------------------------------
+// Part DfPlayer mini
+void InitDfPlayerMini(){
+  FPSerial.begin(9600, SERIAL_8N1, 16, 17); // Start serial communication for ESP32 with 9600 baud rate, 8 data bits, no parity, and 1 stop bit
+
+  if (!myDFPlayer.begin(FPSerial)) { // Initialize the DFPlayer Mini with the defined serial interface
+    Serial.println(F("Unable to begin:")); // If initialization fails, print an error message
+    Serial.println(F("1.Please recheck the connection!")); // Suggest rechecking the connection
+    Serial.println(F("2.Please insert the SD card!")); // Suggest checking for an inserted SD card
+    while(true); // Stay in an infinite loop if initialization fails
+  }
+  Serial.println(F("DFPlayer Mini online.")); // Print a success message if initialization succeeds
+  myDFPlayer.volume(30);  // Set the DFPlayer Mini volume to 30 (max is 30)
+}
+//--------------------------------------------------------------------------------------------------
+
 
 void notFound(AsyncWebServerRequest *request)
 {
@@ -130,17 +152,20 @@ struct tm getNtpTime()
 //--------------------------------------------------------------------------------------------------
 void setup()
 {
-  // initialize the serial port
+  //Initialize the serial port
   Serial.begin(9600);
 
-  // Stepper init 
+  //Stepper init 
   initStepper();
 
-  //servomotor init 
+  //Servomotor init 
   initServomotor();
 
   //Bluetooth init 
   iniBluetooth();
+
+  //DfPlayer Mini init 
+  InitDfPlayerMini();
 
   // Init server Wifi  
   WiFi.mode(WIFI_STA);
@@ -204,6 +229,25 @@ void setup()
     serializeJson(data, response);
     request->send(200, "application/json", response);
   });
+
+  server.on("/play", HTTP_GET, [](AsyncWebServerRequest *request) {
+    StaticJsonDocument<100> data;
+    if (request->hasParam("value"))
+    {
+      int value = request->getParam("value")->value().toInt();;
+      data["message"] = "play";
+      myDFPlayer.play(value);
+     
+    }
+    else
+    {
+      data["message"] = "no value found";
+    }
+    String response;
+    serializeJson(data, response);
+    request->send(200, "application/json", response);
+  });
+
 
   AsyncCallbackJsonWebHandler *handler = new AsyncCallbackJsonWebHandler("/post-message", [](AsyncWebServerRequest *request, JsonVariant &json) {
     StaticJsonDocument<200> data;
